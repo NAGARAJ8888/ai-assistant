@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model User {
+  id            String         @id
+  email         String         @unique
+  createdAt     DateTime       @default(now())
+
+  documents     Document[]
+  conversations Conversation[]
+}
+
+model Document {
+  id            String          @id @default(cuid())
+  title         String
+  cloudinaryUrl String
+  status        DocumentStatus  @default(PROCESSING)
+  pageCount     Int?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  chunks        Chunk[]
+
+  @@index([userId])
+}
+
+model Chunk {
+  id          String      @id @default(cuid())
+
+  content     String
+
+  page        Int
+  chunkIndex  Int
+
+  createdAt   DateTime    @default(now())
+
+  documentId  String
+  document    Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model Conversation {
+  id          String      @id @default(cuid())
+
+  title       String?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  messages    Message[]
+
+  @@index([userId])
+}
+
+model Message {
+  id              String          @id @default(cuid())
+
+  role            MessageRole
+
+  content         String
+
+  createdAt       DateTime        @default(now())
+
+  conversationId  String
+  conversation    Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
