@@ -13,6 +13,8 @@ export interface PromptResult {
 }
 
 export interface ChatResponse {
+  conversationId: string;
+  messageId: string;
   answer: string;
   chunkCount: number;
   retrievalTimeMs: number;

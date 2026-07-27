@@ -3,15 +3,17 @@ import { ChatService } from "../services/chat.service";
 
 async function main() {
   const question = process.argv[2] || "What is this document about?";
+  const userId = process.argv[3] || "test-user-id";
 
   console.log("=".repeat(60));
   console.log("RAG Chat Test");
   console.log("=".repeat(60));
   console.log(`Question: "${question}"`);
+  console.log(`User ID: ${userId}`);
   console.log("");
 
   try {
-    const response = await ChatService.ask(question, 5);
+    const response = await ChatService.ask(question, userId, undefined, 5);
 
     console.log("-".repeat(60));
     console.log("ANSWER:");
