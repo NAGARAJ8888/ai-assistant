@@ -92,7 +92,7 @@ export default function DashboardPage() {
   }, [fetchConversations, fetchMessages, selectedId]);
 
   return (
-    <div className="flex h-full">
+    <div className="flex min-h-0 flex-1">
       {/* Left sidebar — conversations */}
       <div className="w-72 shrink-0 border-r">
         <ConversationSidebar
@@ -109,7 +109,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Right area — chat interface */}
-      <div className="flex-1">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <ChatInterface
           messages={messages}
           loading={msgsLoading}

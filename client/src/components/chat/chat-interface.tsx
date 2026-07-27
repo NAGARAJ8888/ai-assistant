@@ -73,9 +73,9 @@ export function ChatInterface({
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Messages area */}
-      <ScrollArea ref={scrollRef} className="flex-1">
+      <ScrollArea ref={scrollRef} className="min-h-0 flex-1">
         <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-4">
           {/* No conversation selected */}
           {!selectedConversationId && !loading && (
