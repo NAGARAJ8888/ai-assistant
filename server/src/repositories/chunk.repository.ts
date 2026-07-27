@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { randomUUID } from "node:crypto";
+import { prisma } from "../lib/prisma";
+import { RetrievedChunk } from "../types/retrieval.types";
 
 export interface ChunkData {
   documentId: string;
@@ -31,8 +33,36 @@ export class ChunkRepository {
 
   static async similaritySearch(
     embedding: number[],
-    limit: number
-  ): Promise<void> {
-    // Not implemented in this phase
+    limit: number = 5,
+    documentId?: string
+  ): Promise<RetrievedChunk[]> {
+    const embeddingJson = JSON.stringify(embedding);
+
+    const rows: {
+      id: string;
+      documentId: string;
+      content: string;
+      page: number;
+      similarity: number;
+    }[] = await prisma.$queryRaw`
+      SELECT
+        c."id",
+        c."documentId",
+        c."content",
+        c."page",
+        1 - (c."embedding" <=> ${embeddingJson}::vector) AS similarity
+      FROM "Chunk" c
+      WHERE c."embedding" IS NOT NULL
+      ORDER BY c."embedding" <=> ${embeddingJson}::vector ASC
+      LIMIT ${limit}
+    `;
+
+    return rows.map((row) => ({
+      id: row.id,
+      documentId: row.documentId,
+      content: row.content,
+      page: row.page,
+      similarity: row.similarity,
+    }));
   }
 }
