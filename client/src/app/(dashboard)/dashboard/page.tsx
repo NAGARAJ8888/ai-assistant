@@ -1,39 +1,125 @@
 "use client";
 
-import { UserButton, useAuth } from "@clerk/nextjs";
-import { useEffect } from "react";
-import { apiFetch } from "@/lib/api";
+import { useState, useCallback, useEffect } from "react";
+import { ConversationSidebar } from "@/components/conversation/conversation-sidebar";
+import { ChatInterface } from "@/components/chat/chat-interface";
+import { useConversations } from "@/hooks/use-conversations";
+import { useChat } from "@/hooks/use-chat";
 
 export default function DashboardPage() {
-  const { getToken } = useAuth();
-  async function printToken() {
-    const token = await getToken();
+  const {
+    conversations,
+    loading: convsLoading,
+    error: convsError,
+    fetchConversations,
+    create: createConversation,
+    remove: deleteConversation,
+    rename: renameConversation,
+  } = useConversations();
 
-    console.log("Token: ", token);
-  }
-  printToken();
+  const {
+    messages,
+    loading: msgsLoading,
+    sending,
+    error: chatError,
+    fetchMessages,
+    sendMessage,
+    clearMessages,
+  } = useChat();
 
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Load messages when a conversation is selected
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const token = await getToken();
-
-        const data = await apiFetch("/me", token ?? undefined);
-
-        console.log("data: ", data);
-      } catch (error) {
-        console.error(error);
-      }
+    if (selectedId) {
+      fetchMessages(selectedId);
+    } else {
+      clearMessages();
     }
+  }, [selectedId, fetchMessages, clearMessages]);
 
-    fetchUser();
-  }, [getToken]);
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId((prev) => (prev === id ? prev : id));
+  }, []);
+
+  const handleCreate = useCallback(
+    async (title: string) => {
+      const conv = await createConversation(title);
+      // createConversation returns the full detail with messages — we navigate to it
+      // But the hook now returns ConversationDetail | null, and we need its id
+      // We'll refetch conversations after creation
+      if (conv) {
+        setSelectedId(conv.id);
+        fetchMessages(conv.id);
+      }
+    },
+    [createConversation, fetchMessages]
+  );
+
+  const handleDelete = useCallback(
+    async (id: string) => {
+      await deleteConversation(id);
+      if (selectedId === id) {
+        setSelectedId(null);
+        clearMessages();
+      }
+    },
+    [deleteConversation, selectedId, clearMessages]
+  );
+
+  const handleSendMessage = useCallback(
+    async (question: string) => {
+      if (!selectedId) return;
+      const newConversationId = await sendMessage(question, selectedId);
+      // If the chat service created a new conversation (no conversationId was provided),
+      // update the selected id and refresh list
+      if (newConversationId && newConversationId !== selectedId) {
+        setSelectedId(newConversationId);
+        fetchConversations();
+      } else {
+        // Just refresh the conversation list to update timestamps/counts
+        fetchConversations();
+      }
+    },
+    [selectedId, sendMessage, fetchConversations]
+  );
+
+  const handleRefresh = useCallback(() => {
+    fetchConversations();
+    if (selectedId) {
+      fetchMessages(selectedId);
+    }
+  }, [fetchConversations, fetchMessages, selectedId]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="flex h-full">
+      {/* Left sidebar — conversations */}
+      <div className="w-72 shrink-0 border-r">
+        <ConversationSidebar
+          conversations={conversations}
+          selectedId={selectedId}
+          loading={convsLoading}
+          error={convsError}
+          onSelect={handleSelect}
+          onCreate={handleCreate}
+          onRename={renameConversation}
+          onDelete={handleDelete}
+          onRefresh={handleRefresh}
+        />
+      </div>
 
-      <UserButton/>
-    </main>
+      {/* Right area — chat interface */}
+      <div className="flex-1">
+        <ChatInterface
+          messages={messages}
+          loading={msgsLoading}
+          sending={sending}
+          error={chatError}
+          selectedConversationId={selectedId}
+          onSendMessage={handleSendMessage}
+        />
+      </div>
+    </div>
   );
 }
+

@@ -51,3 +51,59 @@ export const uploadDocument = asyncHandler(
     });
   }
 );
+
+export const getDocumentById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const id = req.params.id as string;
+    const document = await DocumentService.getById(id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found.",
+      });
+    }
+
+    // Ensure the document belongs to the requesting user
+    if (document.userId !== user.id) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: document,
+    });
+  }
+);
+
+export const getDocuments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const documents = await DocumentService.getByUser(user.id);
+
+    return res.status(200).json({
+      success: true,
+      data: documents,
+    });
+  }
+);

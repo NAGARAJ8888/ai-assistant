@@ -13,10 +13,23 @@ export class DocumentService {
     return prisma.document.create({
       data: {
         title: data.title,
-        storagePath: data.storagePath, // ✅ Correct field
+        storagePath: data.storagePath,
         status: "PROCESSING",
         userId: data.userId,
       },
+    });
+  }
+
+  static async getById(id: string) {
+    return prisma.document.findUnique({
+      where: { id },
+    });
+  }
+
+  static async getByUser(userId: string) {
+    return prisma.document.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
     });
   }
 }
