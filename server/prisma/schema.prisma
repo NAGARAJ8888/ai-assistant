@@ -21,6 +21,8 @@ enum MessageRole {
 model User {
   id            String         @id
   email         String         @unique
+  name       String?
+  imageUrl   String?
   createdAt     DateTime       @default(now())
 
   documents     Document[]
