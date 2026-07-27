@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { StorageService } from "../services/storage.service";
 import { DocumentService } from "../services/document.service";
+import { DocumentProcessorService } from "../services/document-processor.service";
+import { asyncHandler } from "../utils/async-handler";
 
-export async function uploadDocument(
-  req: Request,
-  res: Response
-) {
-  try {
+export const uploadDocument = asyncHandler(
+  async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -17,10 +16,10 @@ export async function uploadDocument(
     const user = req.user;
 
     if (!user) {
-    return res.status(401).json({
+      return res.status(401).json({
         success: false,
         message: "Unauthorized",
-    });
+      });
     }
 
     const upload = await StorageService.uploadPDF(
@@ -34,17 +33,21 @@ export async function uploadDocument(
       userId: user.id,
     });
 
+    // Trigger document processing asynchronously — do not block the response
+    DocumentProcessorService.process(
+      document.id,
+      req.file
+    ).catch((err) => {
+      console.error(
+        `Background processing failed for document ${document.id}:`,
+        err
+      );
+    });
+
     return res.status(201).json({
       success: true,
       message: "Document uploaded successfully.",
       data: document,
     });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to upload document.",
-    });
   }
-}
+);
