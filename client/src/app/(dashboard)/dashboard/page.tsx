@@ -6,6 +6,12 @@ import { apiFetch } from "@/lib/api";
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
+  async function printToken() {
+    const token = await getToken();
+
+    console.log("Token: ", token);
+  }
+  printToken();
 
   useEffect(() => {
     async function fetchUser() {
@@ -14,7 +20,7 @@ export default function DashboardPage() {
 
         const data = await apiFetch("/me", token ?? undefined);
 
-        console.log(data);
+        console.log("data: ", data);
       } catch (error) {
         console.error(error);
       }

@@ -32,7 +32,7 @@ model User {
 model Document {
   id            String          @id @default(cuid())
   title         String
-  cloudinaryUrl String
+  storagePath   String
   status        DocumentStatus  @default(PROCESSING)
   pageCount     Int?
 
