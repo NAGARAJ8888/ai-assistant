@@ -189,7 +189,7 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Fixed top section: Title + Upload */}
       <div className="shrink-0 px-6 pb-0 pt-6">
         <div className="mx-auto max-w-2xl space-y-6">
@@ -278,7 +278,7 @@ export default function DocumentsPage() {
         <div className="mx-auto max-w-2xl">
           {recentUploads.length > 0 && (
             <div>
-              <h2 className="mb-3 text-sm font-semibold">Recent Uploads</h2>
+              <h2 className="my-3 text-sm font-semibold">Recent Uploads</h2>
               <div className="space-y-2">
                 {recentUploads.map((doc) => {
                   const config = statusConfig[doc.status];

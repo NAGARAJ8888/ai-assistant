@@ -39,7 +39,7 @@ export function ChatInterface({
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       const viewport = scrollRef.current.querySelector(
-        "[data-slot='scroll-area-viewport']"
+        "[data-slot='scroll-area-viewport']",
       );
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
@@ -76,7 +76,7 @@ export function ChatInterface({
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Messages area */}
       <ScrollArea ref={scrollRef} className="min-h-0 flex-1">
-        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-4">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
           {/* No conversation selected */}
           {!selectedConversationId && !loading && (
             <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
@@ -103,24 +103,26 @@ export function ChatInterface({
             <div
               key={msg.id}
               className={cn(
-                "flex gap-3",
-                msg.role === "USER" ? "justify-end" : "justify-start"
+                "flex gap-2 sm:gap-3",
+                msg.role === "USER" ? "justify-end" : "justify-start",
               )}
             >
               {msg.role === "ASSISTANT" && (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <BotIcon className="size-4" />
+                <div className="flex size-7 shrink-0 items-center justify-center self-end rounded-full bg-primary text-primary-foreground sm:size-8">
+                  <BotIcon className="size-3 sm:size-4" />
                 </div>
               )}
               <div
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                  "max-w-[90%] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[80%] sm:px-4 sm:py-2.5",
                   msg.role === "USER"
                     ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-muted text-foreground rounded-bl-sm"
+                    : "bg-muted text-foreground rounded-bl-sm",
                 )}
               >
-                <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                <p className="break-words whitespace-pre-wrap [overflow-wrap:anywhere]">
+                  {msg.content}
+                </p>
                 <p className="mt-1 text-[10px] opacity-50">
                   {new Date(msg.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -129,8 +131,8 @@ export function ChatInterface({
                 </p>
               </div>
               {msg.role === "USER" && (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-                  <UserIcon className="size-4" />
+                <div className="flex size-7 shrink-0 items-center self-end justify-center rounded-full bg-secondary text-secondary-foreground sm:size-8">
+                  <UserIcon className="size-3 sm:size-4" />
                 </div>
               )}
             </div>
@@ -147,8 +149,8 @@ export function ChatInterface({
       </ScrollArea>
 
       {/* Input area */}
-      <div className="border-t p-4">
-        <div className="mx-auto max-w-3xl">
+      <div className="border-t p-3 sm:p-4">
+        <div className="mx-auto w-full max-w-3xl">
           <div className="flex gap-2">
             <Textarea
               ref={textareaRef}
@@ -166,9 +168,7 @@ export function ChatInterface({
             />
             <Button
               onClick={handleSubmit}
-              disabled={
-                !input.trim() || sending || !selectedConversationId
-              }
+              disabled={!input.trim() || sending || !selectedConversationId}
               size="icon"
               className="h-10 w-10 shrink-0 self-end"
             >
@@ -184,4 +184,3 @@ export function ChatInterface({
     </div>
   );
 }
-

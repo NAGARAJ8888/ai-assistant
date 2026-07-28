@@ -89,7 +89,7 @@ export function ConversationSidebar({
   );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col w-72">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <h2 className="text-sm font-semibold text-foreground">Conversations</h2>
@@ -99,6 +99,7 @@ export function ConversationSidebar({
             size="icon-sm"
             onClick={onRefresh}
             title="Refresh"
+            className="min-h-10 min-w-10 md:min-h-8 md:min-w-8"
           >
             <RotateCcwIcon className="size-4" />
           </Button>
@@ -110,6 +111,7 @@ export function ConversationSidebar({
               setNewTitle("");
             }}
             title="New conversation"
+            className="min-h-10 min-w-10 md:min-h-8 md:min-w-8"
           >
             <PlusIcon className="size-4" />
           </Button>
@@ -235,11 +237,11 @@ export function ConversationSidebar({
                       <DropdownMenuTrigger
                         onClick={(e: React.MouseEvent) => e.stopPropagation()}
                         className={cn(
-                          "flex size-5 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted-foreground/10",
-                          selectedId === conv.id && "opacity-100"
+                          "flex size-6 items-center justify-center rounded hover:bg-muted-foreground/10 md:size-5 md:opacity-0 md:transition-opacity md:group-hover:opacity-100",
+                          selectedId === conv.id && "md:opacity-100"
                         )}
                       >
-                        <MoreHorizontalIcon className="size-3.5" />
+                        <MoreHorizontalIcon className="size-4 md:size-3.5" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" sideOffset={4}>
                         <DropdownMenuItem
@@ -275,4 +277,3 @@ export function ConversationSidebar({
     </div>
   );
 }
-
