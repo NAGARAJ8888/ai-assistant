@@ -49,9 +49,7 @@ export class ChatService {
         page: chunk.page,
       }));
 
-      //console.log(
-        `[Chat] Retrieved ${chunkCount} chunk(s) in ${retrievalTimeMs}ms`
-      );
+      //console.log( `[Chat] Retrieved ${chunkCount} chunk(s) in ${retrievalTimeMs}ms`);
     } catch (error) {
       console.error("[Chat] Retrieval failed:", error);
       throw new Error("Failed to retrieve relevant document chunks");
@@ -66,9 +64,7 @@ export class ChatService {
       });
       prompt = promptResult.prompt;
 
-      //console.log(
-        `[Chat] Prompt built: ${promptResult.chunkCount} chunk(s), ${promptResult.contextSize} bytes context`
-      );
+      //console.log(`[Chat] Prompt built: ${promptResult.chunkCount} chunk(s), ${promptResult.contextSize} bytes context`);
     } catch (error) {
       console.error("[Chat] Prompt building failed:", error);
       throw new Error("Failed to build prompt");

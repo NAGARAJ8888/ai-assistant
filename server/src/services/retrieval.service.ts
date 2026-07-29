@@ -12,9 +12,7 @@ export class RetrievalService {
     let embedding: number[];
     try {
       embedding = await EmbeddingService.createEmbedding(question);
-      //console.log(
-        `[Retrieval] Embedding generated (dimension: ${embedding.length})`
-      );
+      //console.log(`[Retrieval] Embedding generated (dimension: ${embedding.length})`);
     } catch (error) {
       console.error("[Retrieval] Embedding generation failed:", error);
       throw new Error("Failed to generate embedding for the question");

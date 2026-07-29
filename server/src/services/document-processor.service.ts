@@ -70,8 +70,8 @@ export class DocumentProcessorService {
       });
 
       //console.log(
-        `Document ${documentId} processed successfully with ${chunksWithEmbeddings.length} chunks`
-      );
+      //  `Document ${documentId} processed successfully with ${chunksWithEmbeddings.length} chunks`
+      //);
     } catch (error) {
       console.error(
         `Document processing failed for ${documentId}:`,
