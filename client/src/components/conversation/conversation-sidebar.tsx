@@ -217,8 +217,7 @@ export function ConversationSidebar({
                     />
                   </form>
                 ) : (
-                  <button
-                    onClick={() => onSelect(conv.id)}
+                  <div
                     className={cn(
                       "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors",
                       selectedId === conv.id
@@ -226,13 +225,19 @@ export function ConversationSidebar({
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <MessageSquareTextIcon className="size-3.5 shrink-0" />
-                    <span className="flex-1 truncate">
-                      {conv.title || "Untitled"}
-                    </span>
-                    <span className="shrink-0 text-[10px] text-muted-foreground/60">
-                      {conv.messageCount}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(conv.id)}
+                      className="flex flex-1 items-center gap-2 text-left"
+                    >
+                      <MessageSquareTextIcon className="size-3.5 shrink-0" />
+                      <span className="flex-1 truncate">
+                        {conv.title || "Untitled"}
+                      </span>
+                      <span className="shrink-0 text-[10px] text-muted-foreground/60">
+                        {conv.messageCount}
+                      </span>
+                    </button>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger
@@ -268,7 +273,7 @@ export function ConversationSidebar({
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </button>
+                  </div>
                 )}
               </div>
             ))}
