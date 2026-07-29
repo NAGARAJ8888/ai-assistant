@@ -75,9 +75,17 @@ export function ChatInterface({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {/* Loading bar when switching conversations — sits right below navbar border */}
+      {loading && messages.length > 0 && (
+        <div className="relative h-1 w-full shrink-0 overflow-hidden bg-muted/30">
+          <div className="absolute inset-0 animate-loading-bar bg-gradient-to-r from-transparent via-primary to-transparent" />
+        </div>
+      )}
+
       {/* Messages area */}
       <ScrollArea ref={scrollRef} className="min-h-0 flex-1">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4">
+
           {/* No conversation selected */}
           {!selectedConversationId && !loading && (
             <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
@@ -106,8 +114,8 @@ export function ChatInterface({
             </div>
           )}
 
-          {/* Loading messages */}
-          {loading && (
+          {/* Loading messages (initial load, no messages yet) */}
+          {loading && messages.length === 0 && (
             <div className="flex items-center justify-center py-20">
               <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
             </div>
