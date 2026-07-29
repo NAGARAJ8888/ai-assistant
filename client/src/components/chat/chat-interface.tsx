@@ -12,6 +12,7 @@ import {
   UserIcon,
   Loader2Icon,
   AlertCircleIcon,
+  MessageSquareTextIcon,
 } from "lucide-react";
 
 interface ChatInterfaceProps {
@@ -87,6 +88,20 @@ export function ChatInterface({
               <p className="max-w-sm text-sm text-muted-foreground">
                 Select a conversation or create a new one to start asking
                 questions about your documents.
+              </p>
+            </div>
+          )}
+
+          {/* Conversation selected but no messages yet — ready to start */}
+          {selectedConversationId && !loading && messages.length === 0 && !sending && (
+            <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
+              <MessageSquareTextIcon className="mb-4 size-12 text-muted-foreground/40" />
+              <h3 className="mb-1 text-lg font-medium text-foreground">
+                Start a conversation
+              </h3>
+              <p className="max-w-sm text-sm text-muted-foreground">
+                Send your first message to start chatting with the AI
+                Knowledge Assistant.
               </p>
             </div>
           )}

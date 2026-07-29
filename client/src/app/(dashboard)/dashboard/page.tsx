@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       {/* Right area — chat interface */}
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-        {/* Mobile: prompt to select a conversation when none is selected */}
+        {/* Mobile prompt when no conversation is selected */}
         {!selectedId && (
           <div className="flex items-center justify-center border-b px-4 py-2 md:hidden">
             <Button

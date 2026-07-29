@@ -8,6 +8,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useConversations } from "@/hooks/use-conversations";
 import { useChat } from "@/hooks/use-chat";
 import type { ConversationSummary, ConversationDetail, Message } from "@/types";
@@ -16,6 +17,7 @@ interface DashboardContextValue {
   // Conversations
   conversations: ConversationSummary[];
   selectedId: string | null;
+  selectedTitle: string | null;
   convsLoading: boolean;
   convsError: string | null;
   onSelect: (id: string) => void;
@@ -41,6 +43,9 @@ interface DashboardProviderProps {
 }
 
 export function DashboardProvider({ children }: DashboardProviderProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const {
     conversations,
     loading: convsLoading,
@@ -62,7 +67,18 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   } = useChat();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // Derive selectedTitle from conversations list when selectedId changes
+  useEffect(() => {
+    if (selectedId) {
+      const conv = conversations.find((c) => c.id === selectedId);
+      setSelectedTitle(conv?.title ?? null);
+    } else {
+      setSelectedTitle(null);
+    }
+  }, [selectedId, conversations]);
 
   // Load messages when a conversation is selected
   useEffect(() => {
@@ -77,8 +93,12 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     (id: string) => {
       setSelectedId((prev) => (prev === id ? prev : id));
       setMobileDrawerOpen(false);
+      // Navigate to dashboard so the chat page shows
+      if (pathname !== "/dashboard") {
+        router.push("/dashboard");
+      }
     },
-    []
+    [router, pathname]
   );
 
   const handleCreate = useCallback(
@@ -88,10 +108,14 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         setSelectedId(conv.id);
         fetchMessages(conv.id);
         setMobileDrawerOpen(false);
+        // Navigate to dashboard so the chat page shows
+        if (pathname !== "/dashboard") {
+          router.push("/dashboard");
+        }
       }
       return conv;
     },
-    [createConversation, fetchMessages]
+    [createConversation, fetchMessages, router, pathname]
   );
 
   const handleDelete = useCallback(
@@ -142,6 +166,7 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
       value={{
         conversations,
         selectedId,
+        selectedTitle,
         convsLoading,
         convsError,
         onSelect: handleSelect,

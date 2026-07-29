@@ -157,24 +157,22 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
         {/* Navigation links */}
         <nav className="shrink-0 space-y-1 px-2 py-3">
-          {navItems
-            .filter((item) => item.href !== "/dashboard")
-            .map((item) => (
-              <Link key={item.href} href={item.href} onClick={closeDrawer}>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start gap-2.5 px-3 text-sm",
-                    pathname === item.href
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="size-4 shrink-0" />
-                  <span>{item.label}</span>
-                </Button>
-              </Link>
-            ))}
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} onClick={closeDrawer}>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start gap-2.5 px-3 text-sm",
+                  pathname === item.href
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <item.icon className="size-4 shrink-0" />
+                <span>{item.label}</span>
+              </Button>
+            </Link>
+          ))}
         </nav>
 
         <Separator />

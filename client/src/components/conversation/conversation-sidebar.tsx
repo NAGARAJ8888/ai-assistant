@@ -40,6 +40,7 @@ export function ConversationSidebar({
   selectedId,
   loading,
   error,
+  
   onSelect,
   onCreate,
   onRename,
