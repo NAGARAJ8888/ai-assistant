@@ -8,8 +8,8 @@ interface CreateDocumentInput {
 
 export class DocumentService {
   static async create(data: CreateDocumentInput) {
-    console.log("DocumentService data:", data);
-    console.log("Using storagePath field");
+    //console.log("DocumentService data:", data);
+    //console.log("Using storagePath field");
     return prisma.document.create({
       data: {
         title: data.title,

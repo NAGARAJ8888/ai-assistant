@@ -13,7 +13,7 @@ export class MessageService {
     // Update lastMessageAt timestamp on the conversation
     await ConversationRepository.updateLastMessageAt(conversationId);
 
-    console.log(`[Message] User message saved: conversationId=${conversationId}, messageId=${message.id}`);
+    //console.log(`[Message] User message saved: conversationId=${conversationId}, messageId=${message.id}`);
 
     return message;
   }
@@ -33,7 +33,7 @@ export class MessageService {
     // Update lastMessageAt timestamp on the conversation
     await ConversationRepository.updateLastMessageAt(conversationId);
 
-    console.log(`[Message] Assistant message saved: conversationId=${conversationId}, messageId=${message.id}`);
+    //console.log(`[Message] Assistant message saved: conversationId=${conversationId}, messageId=${message.id}`);
 
     return message;
   }
@@ -51,7 +51,7 @@ export class MessageService {
 
     const messages = await MessageRepository.findByConversation(conversationId);
 
-    console.log(`[Message] History retrieved: conversationId=${conversationId}, count=${messages.length}, userId=${userId}`);
+    //console.log(`[Message] History retrieved: conversationId=${conversationId}, count=${messages.length}, userId=${userId}`);
 
     return messages;
   }

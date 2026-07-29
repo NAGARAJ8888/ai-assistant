@@ -39,7 +39,7 @@ ${question}
     const contextSize = Buffer.byteLength(contextSection, "utf-8");
     const chunkCount = chunks.length;
 
-    console.log(
+    //console.log(
       `[PromptBuilder] Built prompt: ${chunkCount} chunk(s), ${contextSize} bytes of context`
     );
 

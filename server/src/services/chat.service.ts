@@ -14,14 +14,14 @@ export class ChatService {
   ): Promise<ChatResponse> {
     const totalStartTime = Date.now();
 
-    console.log(`[Chat] Question received: "${question}", userId=${userId}`);
+    //console.log(`[Chat] Question received: "${question}", userId=${userId}`);
 
     // Phase 0: Ensure conversation exists
     let convId = conversationId;
     if (!convId) {
       const conversation = await ConversationService.create(userId, question);
       convId = conversation.id;
-      console.log(`[Chat] New conversation created: id=${convId}`);
+      //console.log(`[Chat] New conversation created: id=${convId}`);
     }
 
     // Phase 1: Save user message
@@ -49,7 +49,7 @@ export class ChatService {
         page: chunk.page,
       }));
 
-      console.log(
+      //console.log(
         `[Chat] Retrieved ${chunkCount} chunk(s) in ${retrievalTimeMs}ms`
       );
     } catch (error) {
@@ -66,7 +66,7 @@ export class ChatService {
       });
       prompt = promptResult.prompt;
 
-      console.log(
+      //console.log(
         `[Chat] Prompt built: ${promptResult.chunkCount} chunk(s), ${promptResult.contextSize} bytes context`
       );
     } catch (error) {
@@ -83,7 +83,7 @@ export class ChatService {
       answer = await AIService.generate(prompt);
       aiGenerationTimeMs = Date.now() - aiStartTime;
 
-      console.log(`[Chat] AI response generated in ${aiGenerationTimeMs}ms`);
+      //console.log(`[Chat] AI response generated in ${aiGenerationTimeMs}ms`);
     } catch (error) {
       console.error("[Chat] AI generation failed:", error);
       throw new Error("Failed to generate AI response");
@@ -105,7 +105,7 @@ export class ChatService {
 
     const totalExecutionTimeMs = Date.now() - totalStartTime;
 
-    console.log(`[Chat] Total execution time: ${totalExecutionTimeMs}ms`);
+    //console.log(`[Chat] Total execution time: ${totalExecutionTimeMs}ms`);
 
     return {
       conversationId: convId,

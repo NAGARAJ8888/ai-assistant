@@ -10,7 +10,7 @@ async function main() {
 
   const embedding = response.embeddings?.[0]?.values;
 
-  console.log("Dimension:", embedding?.length);
+  //console.log("Dimension:", embedding?.length);
 }
 
 main().catch(console.error);

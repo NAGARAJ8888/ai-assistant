@@ -16,7 +16,7 @@ export class DocumentProcessorService {
       // 2. Split into chunks (CPU work - outside transaction)
       const langchainChunks = await ChunkService.split(pdf.text);
 
-      console.log(`Created ${langchainChunks.length} chunks`);
+      //console.log(`Created ${langchainChunks.length} chunks`);
 
       // 3. Generate embeddings (API work - outside transaction)
       const chunksWithEmbeddings: {
@@ -45,7 +45,7 @@ export class DocumentProcessorService {
           embedding,
         });
 
-        console.log(`Chunk ${i}: embedding dimension ${embedding.length}`);
+        //console.log(`Chunk ${i}: embedding dimension ${embedding.length}`);
       }
 
       // 4. Save chunks and embeddings in a database transaction
@@ -69,7 +69,7 @@ export class DocumentProcessorService {
         });
       });
 
-      console.log(
+      //console.log(
         `Document ${documentId} processed successfully with ${chunksWithEmbeddings.length} chunks`
       );
     } catch (error) {

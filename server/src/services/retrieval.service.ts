@@ -6,13 +6,13 @@ export class RetrievalService {
   static async retrieve(question: string, limit: number = 5): Promise<RetrievalResult> {
     const startTime = Date.now();
 
-    console.log(`[Retrieval] Question received: "${question}"`);
+    //console.log(`[Retrieval] Question received: "${question}"`);
 
     // 1. Generate embedding for the question
     let embedding: number[];
     try {
       embedding = await EmbeddingService.createEmbedding(question);
-      console.log(
+      //console.log(
         `[Retrieval] Embedding generated (dimension: ${embedding.length})`
       );
     } catch (error) {
@@ -28,14 +28,14 @@ export class RetrievalService {
     let chunks: RetrievedChunk[];
     try {
       chunks = await ChunkRepository.similaritySearch(embedding, limit);
-      console.log(`[Retrieval] Retrieved ${chunks.length} chunks`);
+      //console.log(`[Retrieval] Retrieved ${chunks.length} chunks`);
     } catch (error) {
       console.error("[Retrieval] Similarity search failed:", error);
       throw new Error("Failed to retrieve relevant chunks");
     }
 
     const executionTimeMs = Date.now() - startTime;
-    console.log(`[Retrieval] Execution time: ${executionTimeMs}ms`);
+    //console.log(`[Retrieval] Execution time: ${executionTimeMs}ms`);
 
     return {
       question,

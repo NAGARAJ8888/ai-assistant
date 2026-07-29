@@ -10,13 +10,13 @@ export async function syncUser(
   try {
     const { userId } = getAuth(req);
 
-    console.log("Authorization Header:");
-    console.log(req.headers.authorization);
+    // //console.log("Authorization Header:");
+    // //console.log(req.headers.authorization);
 
     const auth = getAuth(req);
 
-    console.log("Auth:");
-    console.log(auth);
+    // //console.log("Auth:");
+    // //console.log(auth);
 
     if (!userId) {
       return res.status(401).json({
