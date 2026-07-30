@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { StorageService } from "./storage.service";
 
 interface CreateDocumentInput {
   title: string;
@@ -31,5 +32,47 @@ export class DocumentService {
       where: { userId },
       orderBy: { createdAt: "desc" },
     });
+  }
+
+  /**
+   * Permanently deletes a document and all related data.
+   *
+   * Order of operations:
+   * 1. Verify the document exists and belongs to the requesting user.
+   * 2. Delete the document from the database (Prisma cascade removes all chunks + embeddings).
+   * 3. Delete the PDF from Supabase Storage (best-effort, logs error on failure).
+   *
+   * This ensures database consistency is never compromised by a storage failure.
+   */
+  static async delete(id: string, userId: string): Promise<void> {
+    // 1. Fetch document and verify ownership
+    const document = await prisma.document.findUnique({
+      where: { id },
+    });
+
+    if (!document) {
+      throw new Error("Document not found");
+    }
+
+    if (document.userId !== userId) {
+      throw new Error("Document not found");
+    }
+
+    const storagePath = document.storagePath;
+
+    // 2. Delete the document from the database
+    //    Prisma cascade (onDelete: Cascade) automatically removes all related
+    //    chunks and their vector embeddings.
+    await prisma.document.delete({
+      where: { id },
+    });
+
+    // 3. Delete the PDF from Supabase Storage (best-effort)
+    //    We do this AFTER the DB delete so that the database remains consistent
+    //    even if the storage operation fails. The user will no longer see the
+    //    document in the UI, and no orphaned DB records remain.
+    if (storagePath) {
+      await StorageService.deletePDF(storagePath);
+    }
   }
 }

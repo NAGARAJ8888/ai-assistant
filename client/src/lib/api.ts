@@ -150,3 +150,12 @@ export async function getDocument(
   return apiFetch<Document>(`/api/documents/${id}`, token);
 }
 
+export async function deleteDocument(
+  token: string,
+  id: string
+): Promise<void> {
+  await apiFetch<void>(`/api/documents/${id}`, token, {
+    method: "DELETE",
+  });
+}
+

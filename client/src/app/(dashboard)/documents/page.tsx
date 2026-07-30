@@ -7,12 +7,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
   UploadIcon,
   FileTextIcon,
   Loader2Icon,
   CheckCircle2Icon,
   AlertCircleIcon,
   XCircleIcon,
+  MoreVerticalIcon,
+  Trash2Icon,
 } from "lucide-react";
 import * as api from "@/lib/api";
 import type { Document } from "@/types";
@@ -42,6 +58,10 @@ export default function DocumentsPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedDoc, setUploadedDoc] = useState<Document | null>(null);
   const [recentUploads, setRecentUploads] = useState<Document[]>([]);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const getTokenRef = useRef(getToken);
   getTokenRef.current = getToken;
@@ -182,6 +202,40 @@ export default function DocumentsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!docToDelete) return;
+
+    const docId = docToDelete.id;
+
+    try {
+      setDeletingDocId(docId);
+      setDeleteError(null);
+      setDeleteSuccess(null);
+
+      const token = await getToken();
+      if (!token) {
+        setDeleteError("Authentication required. Please sign in.");
+        return;
+      }
+
+      await api.deleteDocument(token, docId);
+
+      // Remove the document from the UI immediately
+      setRecentUploads((prev) => prev.filter((d) => d.id !== docId));
+
+      // Clear success message after 3 seconds
+      setDeleteSuccess(`"${docToDelete.title}" deleted successfully.`);
+      setTimeout(() => setDeleteSuccess(null), 3000);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to delete document.";
+      setDeleteError(msg);
+    } finally {
+      setDeletingDocId(null);
+      setDocToDelete(null);
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -268,6 +322,22 @@ export default function DocumentsPage() {
                   </span>
                 </div>
               )}
+
+              {/* Delete success message */}
+              {deleteSuccess && (
+                <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
+                  <CheckCircle2Icon className="size-4 shrink-0" />
+                  <span>{deleteSuccess}</span>
+                </div>
+              )}
+
+              {/* Delete error message */}
+              {deleteError && (
+                <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  <AlertCircleIcon className="size-4 shrink-0" />
+                  <span>{deleteError}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -283,6 +353,7 @@ export default function DocumentsPage() {
                 {recentUploads.map((doc) => {
                   const config = statusConfig[doc.status];
                   const StatusIcon = config.icon;
+                  const isDeleting = deletingDocId === doc.id;
                   return (
                     <Card key={doc.id} size="sm">
                       <CardContent className="flex items-center gap-3 py-3">
@@ -304,6 +375,34 @@ export default function DocumentsPage() {
                           />
                           <span className="ml-1">{config.label}</span>
                         </Badge>
+
+{/* Document actions dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              disabled={isDeleting}
+                              className="shrink-0"
+                            >
+                              {isDeleting ? (
+                                <Loader2Icon className="size-4 animate-spin" />
+                              ) : (
+                                <MoreVerticalIcon className="size-4" />
+                              )}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setDocToDelete(doc)}
+                              disabled={isDeleting}
+                            >
+                              <Trash2Icon className="size-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </CardContent>
                     </Card>
                   );
@@ -323,6 +422,51 @@ export default function DocumentsPage() {
           )}
         </div>
       </ScrollArea>
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={docToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setDocToDelete(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Document</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete{" "}
+              <strong>{docToDelete?.title}</strong>? This action cannot be undone.
+              The PDF, all text chunks, and vector embeddings will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDocToDelete(null)}
+              disabled={deletingDocId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deletingDocId !== null}
+            >
+              {deletingDocId !== null ? (
+                <>
+                  <Loader2Icon className="size-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2Icon className="size-4" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

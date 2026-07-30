@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const document_controller_1 = require("../controllers/document.controller");
+const sync_user_1 = require("../middleware/sync-user");
+const upload_middleware_1 = require("../middleware/upload.middleware");
+const router = (0, express_1.Router)();
+router.post("/upload", sync_user_1.syncUser, upload_middleware_1.upload.single("document"), document_controller_1.uploadDocument);
+router.get("/", sync_user_1.syncUser, document_controller_1.getDocuments);
+router.get("/:id", sync_user_1.syncUser, document_controller_1.getDocumentById);
+router.delete("/:id", sync_user_1.syncUser, document_controller_1.deleteDocument);
+exports.default = router;

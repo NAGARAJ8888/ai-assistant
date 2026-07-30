@@ -26,4 +26,14 @@ export class StorageService {
       fileName,
     };
   }
+
+  static async deletePDF(path: string): Promise<void> {
+    const { error } = await supabase.storage
+      .from("documents")
+      .remove([path]);
+
+    if (error) {
+      console.error(`Failed to delete PDF from storage at path "${path}":`, error.message);
+    }
+  }
 }

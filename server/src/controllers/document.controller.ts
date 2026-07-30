@@ -107,3 +107,39 @@ export const getDocuments = asyncHandler(
     });
   }
 );
+
+export const deleteDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const id = req.params.id as string;
+
+    try {
+      await DocumentService.delete(id, user.id);
+
+      return res.status(200).json({
+        success: true,
+        message: "Document deleted successfully.",
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete document";
+
+      if (message === "Document not found") {
+        return res.status(404).json({
+          success: false,
+          message,
+        });
+      }
+
+      throw err;
+    }
+  }
+);
