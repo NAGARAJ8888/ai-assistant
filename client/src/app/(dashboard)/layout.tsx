@@ -13,6 +13,8 @@ import {
   MenuIcon,
   XIcon,
   PanelLeftCloseIcon,
+  MessageSquare,
+  FileText,
 } from "lucide-react";
 import { useEffect, useCallback } from "react";
 import { DashboardProvider, useDashboard } from "./dashboard-context";
@@ -228,7 +230,12 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
             </span>
             {/* Desktop sidebar toggle icons */}
             <span className="hidden md:inline-flex">
-              <PanelLeftCloseIcon className="size-4" />
+              {pathname === "/dashboard"
+              ? <MessageSquare className="size-4" />
+              : pathname === "/documents"
+                ? <FileText className="size-4" />
+                : ""}
+              
             </span>
           </Button>
           <span className="text-sm font-medium text-muted-foreground">
