@@ -136,12 +136,15 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     async (question: string) => {
       if (!selectedId) return;
       const newConversationId = await sendMessage(question, selectedId);
+      // Only update selectedId if a new conversation was created.
+      // We do NOT refetch messages here — the optimistic user message and
+      // assistant response are already in state from sendMessage, and
+      // refetching would replace them with the server snapshot (which
+      // contains both messages at once), causing them to appear together.
       if (newConversationId && newConversationId !== selectedId) {
         setSelectedId(newConversationId);
-        fetchConversations();
-      } else {
-        fetchConversations();
       }
+      fetchConversations();
     },
     [selectedId, sendMessage, fetchConversations]
   );
