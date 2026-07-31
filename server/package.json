@@ -14,8 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "@clerk/express": "^2.1.46",
-    "@google/genai": "^2.13.0",
-    "@langchain/textsplitters": "^1.0.1",
+"@langchain/textsplitters": "^1.0.1",
+    "openai": "^4.80.0",
     "@prisma/client": "^6.19.3",
     "@supabase/supabase-js": "^2.110.8",
     "@types/helmet": "^0.0.48",

@@ -1,16 +1,9 @@
 import "dotenv/config";
-import gemini from "../lib/gemini";
-
+import { EmbeddingService } from "../services/embedding.service";
 
 async function main() {
-  const response = await gemini.models.embedContent({
-    model: "gemini-embedding-001",
-    contents: "Hello World",
-  });
-
-  const embedding = response.embeddings?.[0]?.values;
-
-  //console.log("Dimension:", embedding?.length);
+  const embedding = await EmbeddingService.createEmbedding("Hello World");
+  //console.log("Dimension:", embedding.length);
 }
 
 main().catch(console.error);

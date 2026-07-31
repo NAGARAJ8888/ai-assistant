@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +29,7 @@ import {
   MoreVerticalIcon,
   Trash2Icon,
 } from "lucide-react";
-import * as api from "@/lib/api";
+import { useDashboard } from "../dashboard-context";
 import type { Document } from "@/types";
 
 const statusConfig = {
@@ -52,153 +51,41 @@ const statusConfig = {
 };
 
 export default function DocumentsPage() {
-  const { getToken } = useAuth();
+  const {
+    recentUploads,
+    uploading,
+    uploadError,
+    uploadedDoc,
+    deleteSuccess,
+    deleteError,
+    onUploadDocument,
+    onDeleteDocument,
+    onClearDeleteMessages,
+    onClearUploadState,
+  } = useDashboard();
+
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [uploadedDoc, setUploadedDoc] = useState<Document | null>(null);
-  const [recentUploads, setRecentUploads] = useState<Document[]>([]);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const getTokenRef = useRef(getToken);
-  getTokenRef.current = getToken;
-
-  // Keep a ref to the latest recentUploads so polling always has fresh data
-  const recentUploadsRef = useRef(recentUploads);
-  recentUploadsRef.current = recentUploads;
-
-  // Load existing documents on mount
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      const token = await getTokenRef.current();
-      if (!token || cancelled) return;
-      try {
-        const docs = await api.getDocuments(token);
-        if (!cancelled) {
-          setRecentUploads(docs);
-        }
-      } catch {
-        // Silently fail — user can manually upload
-      }
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Poll documents that are still PROCESSING
-  const pollProcessing = useCallback(async () => {
-    const currentUploads = recentUploadsRef.current;
-    const processingIds = currentUploads
-      .filter((d) => d.status === "PROCESSING")
-      .map((d) => d.id);
-    if (processingIds.length === 0) return;
-
-    const token = await getTokenRef.current();
-    if (!token) return;
-
-    const updated = await Promise.all(
-      processingIds.map(async (id) => {
-        try {
-          const doc = await api.getDocument(token, id);
-          return doc;
-        } catch {
-          return null;
-        }
-      })
-    );
-
-    const settled = updated.filter(Boolean) as Document[];
-
-    setRecentUploads((prev) => {
-      const next = prev.map((doc) => {
-        const match = settled.find((u) => u.id === doc.id);
-        if (match && (match.status !== doc.status || match.pageCount !== doc.pageCount)) {
-          return match;
-        }
-        return doc;
-      });
-      // Bail out if nothing changed to avoid re-render loops
-      if (next.every((doc, i) => doc === prev[i])) {
-        return prev;
-      }
-      return next;
-    });
-  }, []); // stable — reads via refs
-
-  // Poll every 2 seconds while any document is PROCESSING
-  useEffect(() => {
-    const hasProcessing = recentUploads.some(
-      (d) => d.status === "PROCESSING"
-    );
-    if (!hasProcessing) return;
-
-    const interval = setInterval(pollProcessing, 2000);
-    return () => clearInterval(interval);
-  }, [recentUploads, pollProcessing]);
-
-  // Also update uploadedDoc when it changes to READY/FAILED
-  useEffect(() => {
-    if (uploadedDoc) {
-      const match = recentUploads.find((d) => d.id === uploadedDoc.id);
-      if (match && match.status !== uploadedDoc.status) {
-        setUploadedDoc(match);
-      }
-    }
-  }, [recentUploads, uploadedDoc]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
     setFile(selected);
-    setUploadError(null);
-    setUploadedDoc(null);
+    onClearUploadState();
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setUploadError("Please select a PDF file to upload.");
       return;
     }
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      setUploadError("Only PDF files are supported.");
-      return;
-    }
+    await onUploadDocument(file);
+    setFile(null);
 
-    try {
-      setUploading(true);
-      setUploadError(null);
-      setUploadedDoc(null);
-
-      const token = await getToken();
-      if (!token) {
-        setUploadError("Authentication required. Please sign in.");
-        return;
-      }
-
-      const doc = await api.uploadDocument(token, file);
-      setUploadedDoc(doc);
-      setRecentUploads((prev) => [doc, ...prev]);
-      setFile(null);
-
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to upload document.";
-      setUploadError(msg);
-    } finally {
-      setUploading(false);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -209,27 +96,9 @@ export default function DocumentsPage() {
 
     try {
       setDeletingDocId(docId);
-      setDeleteError(null);
-      setDeleteSuccess(null);
-
-      const token = await getToken();
-      if (!token) {
-        setDeleteError("Authentication required. Please sign in.");
-        return;
-      }
-
-      await api.deleteDocument(token, docId);
-
-      // Remove the document from the UI immediately
-      setRecentUploads((prev) => prev.filter((d) => d.id !== docId));
-
+      await onDeleteDocument(docId);
       // Clear success message after 3 seconds
-      setDeleteSuccess(`"${docToDelete.title}" deleted successfully.`);
-      setTimeout(() => setDeleteSuccess(null), 3000);
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to delete document.";
-      setDeleteError(msg);
+      setTimeout(() => onClearDeleteMessages(), 3000);
     } finally {
       setDeletingDocId(null);
       setDocToDelete(null);
@@ -470,3 +339,4 @@ export default function DocumentsPage() {
     </div>
   );
 }
+

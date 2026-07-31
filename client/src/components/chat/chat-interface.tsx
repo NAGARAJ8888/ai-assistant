@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useVisualViewport } from "@/hooks/use-visual-viewport";
 import type { Message } from "@/types";
 import {
   SendIcon,
@@ -35,6 +36,13 @@ export function ChatInterface({
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputBarRef = useRef<HTMLDivElement>(null);
+
+  // Detect virtual keyboard via the Visual Viewport API.
+  // On mobile, when the keyboard opens, the visual viewport shrinks.
+  // We use this to translate the input bar upward so it sits flush
+  // against the top of the keyboard, while the navbar stays fixed.
+  const { keyboardOpen, keyboardHeight, visualOffsetTop } = useVisualViewport();
 
   // Auto-scroll to bottom on new messages
   const scrollToBottom = useCallback(() => {
@@ -51,6 +59,16 @@ export function ChatInterface({
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // When the keyboard opens/closes, scroll to the latest message so it
+  // remains visible between the fixed navbar and the input bar.
+  useEffect(() => {
+    // Wait one frame so the layout has settled before scrolling.
+    const id = requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [keyboardOpen, keyboardHeight, scrollToBottom]);
 
   // Focus textarea when conversation changes
   useEffect(() => {
@@ -171,8 +189,29 @@ export function ChatInterface({
         </div>
       </ScrollArea>
 
-      {/* Input area */}
-      <div className="border-t p-3 sm:p-4">
+      {/* Input area — on mobile, this bar is translated upward by the
+          keyboard height so it sits flush against the top of the virtual
+          keyboard. The navbar above stays fixed in place. */}
+      <div
+        ref={inputBarRef}
+        // On mobile only: translate the bar up by the keyboard height so it
+        // sits directly above the keyboard with no gap. We use a CSS
+        // custom property so the value is reactive without re-rendering
+        // the whole subtree. `visualOffsetTop` accounts for iOS Safari
+        // shifting the layout viewport when the keyboard opens.
+        style={
+          keyboardOpen
+            ? ({
+                transform: `translateY(-${keyboardHeight + visualOffsetTop}px)`,
+                transition: "transform 120ms ease-out",
+              } as React.CSSProperties)
+            : ({
+                transform: "translateY(0)",
+                transition: "transform 120ms ease-out",
+              } as React.CSSProperties)
+        }
+        className="chat-input-bar border-t p-3 sm:p-4"
+      >
         <div className="mx-auto w-full max-w-3xl">
           <div className="flex gap-2">
             <Textarea
